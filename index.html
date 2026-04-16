@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitHub Agentic Workflows</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: #0d1117;
+      color: #e6edf3;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 24px 40px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    header svg { flex-shrink: 0; }
+
+    header h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e6edf3;
+    }
+
+    header p {
+      font-size: 0.85rem;
+      color: #8b949e;
+      margin-top: 2px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 24px;
+    }
+
+    /* ── Tabs ── */
+    .tabs {
+      display: flex;
+      border-bottom: 2px solid #30363d;
+      margin-bottom: 32px;
+      gap: 0;
+    }
+
+    .tab-btn {
+      background: none;
+      border: none;
+      color: #8b949e;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 12px 24px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: color 0.2s, border-color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover { color: #e6edf3; }
+
+    .tab-btn.active {
+      color: #58a6ff;
+      border-bottom-color: #58a6ff;
+    }
+
+    .tab-panel { display: none; animation: fadeIn 0.25s ease; }
+    .tab-panel.active { display: block; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* ── Cards ── */
+    .card {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 10px;
+      padding: 28px 32px;
+      margin-bottom: 20px;
+    }
+
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: #e6edf3;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card p, .card li {
+      font-size: 0.9rem;
+      color: #8b949e;
+      line-height: 1.7;
+    }
+
+    .card ul, .card ol {
+      padding-left: 20px;
+      margin-top: 10px;
+    }
+
+    .card li { margin-bottom: 6px; }
+
+    /* ── Highlight box ── */
+    .highlight {
+      background: #0d2136;
+      border: 1px solid #1f6feb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+
+    .highlight p { color: #79c0ff; font-size: 0.9rem; line-height: 1.7; }
+    .highlight strong { color: #e6edf3; }
+
+    /* ── Steps ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; margin-top: 16px; }
+
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+      align-items: flex-start;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      background: #1f6feb;
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .steps li p { color: #c9d1d9; font-size: 0.9rem; line-height: 1.6; margin: 0; }
+    .steps li strong { color: #e6edf3; }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 12px;
+    }
+
+    .badge-red   { background: #3d1212; color: #ff7b72; border: 1px solid #6e1313; }
+    .badge-green { background: #0d2b1a; color: #3fb950; border: 1px solid #1b6e35; }
+    .badge-gray  { background: #21262d; color: #8b949e; border: 1px solid #30363d; }
+    .badge-blue  { background: #0d2136; color: #58a6ff; border: 1px solid #1f6feb; }
+
+    /* ── Workflow badge ── */
+    .workflow-tag {
+      display: inline-block;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      padding: 2px 10px;
+      font-size: 0.78rem;
+      color: #8b949e;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* ── Divider ── */
+    hr { border: none; border-top: 1px solid #30363d; margin: 24px 0; }
+
+    /* ── Flowchart preview ── */
+    .flow-preview {
+      background: #0d1117;
+      border: 1px dashed #30363d;
+      border-radius: 8px;
+      padding: 24px;
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    .flow-node {
+      border-radius: 8px;
+      padding: 10px 24px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      text-align: center;
+      min-width: 180px;
+    }
+
+    .flow-node.gray  { background: #2d333b; color: #c9d1d9; border: 1px solid #444c56; }
+    .flow-node.red   { background: #3d1212; color: #ff7b72; border: 1px solid #6e1313; }
+    .flow-node.green { background: #0d2b1a; color: #3fb950; border: 1px solid #1b6e35; }
+
+    .flow-arrow {
+      width: 2px;
+      height: 28px;
+      background: #444c56;
+      position: relative;
+    }
+
+    .flow-arrow::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #444c56;
+    }
+
+    .flow-branch {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .flow-branch-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 32px;
+      color: #484f58;
+      font-size: 0.8rem;
+      border-top: 1px solid #21262d;
+      margin-top: 48px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- GitHub logo -->
+  <svg width="36" height="36" viewBox="0 0 98 96" fill="#e6edf3" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+  </svg>
+  <div>
+    <h1>GitHub Agentic Workflows</h1>
+    <p>Automações inteligentes com GitHub Copilot para o seu repositório</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('tab-issue', this)">
+      🐛 Issue Clarifier
+    </button>
+    <button class="tab-btn" onclick="showTab('tab-pr', this)">
+      🔀 Fluxograma de PR
+    </button>
+    <button class="tab-btn" onclick="showTab('tab-como', this)">
+      ⚙️ Como Funciona
+    </button>
+  </div>
+
+  <!-- ══════════════ TAB 1 — Issue Clarifier ══════════════ -->
+  <div id="tab-issue" class="tab-panel active">
+
+    <div class="card">
+      <h2>🐛 Testando o Workflow de Issue Clarifier</h2>
+      <p>
+        Este repositório possui um workflow agêntico que monitora novas issues abertas.
+        Quando uma issue é criada com descrição vaga ou incompleta, o Copilot automaticamente
+        pede mais detalhes ao autor.
+      </p>
+    </div>
+
+    <div class="highlight">
+      <p>
+        <strong>🧪 Como testar:</strong> Abra uma issue mal descrita neste repositório —
+        por exemplo, apenas com o título <em>"bug"</em> ou <em>"não está funcionando"</em> —
+        e observe o Copilot responder automaticamente pedindo mais informações.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>📋 Passo a passo para o teste</h2>
+      <ol class="steps">
+        <li><p>Acesse a aba <strong>Issues</strong> deste repositório no GitHub.</p></li>
+        <li><p>Clique em <strong>"New issue"</strong> para criar uma nova issue.</p></li>
+        <li>
+          <p>
+            Preencha <strong>apenas o título</strong> com algo vago — por exemplo:
+            <em>"problema"</em>, <em>"erro"</em> ou <em>"tá quebrando"</em>.
+            Deixe o campo de descrição <strong>vazio ou com poucas palavras</strong>.
+          </p>
+        </li>
+        <li><p>Clique em <strong>"Submit new issue"</strong> para criar.</p></li>
+        <li>
+          <p>
+            Aguarde alguns instantes. O GitHub Copilot irá analisar a issue e postar
+            automaticamente um comentário solicitando mais detalhes sobre o problema.
+          </p>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>💡 O que o workflow faz?</h2>
+      <p>O arquivo <span class="workflow-tag">.github/workflows/issue-clarifier.md</span> instrui o Copilot a:</p>
+      <ul>
+        <li>Analisar o conteúdo da issue assim que ela é aberta</li>
+        <li>Identificar se a descrição está incompleta ou pouco detalhada</li>
+        <li>Postar um comentário amigável pedindo informações adicionais ao autor</li>
+        <li>Ajudar a manter o backlog organizado e acionável</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>🏷️ Gatilho do Workflow</h2>
+      <p>Este workflow é disparado automaticamente em:</p>
+      <ul style="margin-top: 10px;">
+        <li><span class="badge badge-blue">issues: opened</span> — toda vez que uma <strong>nova issue é criada</strong></li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ TAB 2 — Fluxograma de PR ══════════════ -->
+  <div id="tab-pr" class="tab-panel">
+
+    <div class="card">
+      <h2>🔀 Workflow: Fluxograma de Alterações de Pull Request</h2>
+      <p>
+        Ao abrir um Pull Request, o Copilot analisa automaticamente os arquivos modificados
+        e gera um <strong>fluxograma de regras de negócio</strong> diretamente como comentário no PR —
+        destacando visualmente o que foi removido e o que foi adicionado.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>🎨 Convenção de Cores</h2>
+      <p style="margin-bottom: 14px;">O fluxograma segue a seguinte legenda de cores:</p>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <span class="badge badge-red">🔴 Removido / Substituído</span>
+        <span class="badge badge-green">🟢 Novo / Adicionado</span>
+        <span class="badge badge-gray">⚪ Sem alteração</span>
+      </div>
+
+      <div class="flow-preview" style="margin-top: 24px;">
+        <div class="flow-node gray">Fluxo Existente</div>
+        <div class="flow-arrow"></div>
+        <div class="flow-branch">
+          <div class="flow-branch-col">
+            <div class="flow-node red">Regra Anterior</div>
+          </div>
+          <div class="flow-branch-col" style="margin-top: 0;">
+            <div class="flow-node green">Nova Regra</div>
+          </div>
+        </div>
+        <div class="flow-arrow"></div>
+        <div class="flow-node gray">Resultado Final</div>
+      </div>
+      <p style="text-align: center; margin-top: 10px; font-size: 0.78rem; color: #484f58;">
+        Prévia ilustrativa do fluxograma gerado automaticamente
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>📋 Como o Workflow age ao abrir um PR</h2>
+      <ol class="steps">
+        <li><p>O Copilot é acionado assim que um <strong>novo Pull Request é aberto</strong>.</p></li>
+        <li><p>Ele lê todos os <strong>arquivos modificados</strong> no PR e identifica as regras de negócio impactadas.</p></li>
+        <li><p>Gera um <strong>fluxograma Mermaid</strong> mostrando o antes e o depois do fluxo de negócio.</p></li>
+        <li>
+          <p>
+            Posta o fluxograma como <strong>comentário no PR</strong>, acompanhado de um
+            resumo em linguagem natural das mudanças de negócio.
+          </p>
+        </li>
+        <li>
+          <p>
+            Se as alterações forem apenas técnicas (refatoração, lint, tipagem),
+            o Copilot informa isso explicitamente, sem gerar fluxograma.
+          </p>
+        </li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>🏷️ Gatilho do Workflow</h2>
+      <p>Este workflow é disparado automaticamente em:</p>
+      <ul style="margin-top: 10px;">
+        <li><span class="badge badge-blue">pull_request: opened</span> — toda vez que um <strong>novo PR é aberto</strong></li>
+      </ul>
+      <hr />
+      <p>Arquivo de configuração: <span class="workflow-tag">.github/workflows/pr-change-flowchart.md</span></p>
+    </div>
+
+  </div>
+
+  <!-- ══════════════ TAB 3 — Como Funciona ══════════════ -->
+  <div id="tab-como" class="tab-panel">
+
+    <div class="card">
+      <h2>⚙️ Como os Workflows Agênticos Funcionam</h2>
+      <p>
+        Os workflows agênticos do GitHub Copilot utilizam arquivos <code>.md</code> dentro da pasta
+        <span class="workflow-tag">.github/workflows/</span> para definir o comportamento do agente.
+        Diferente dos workflows tradicionais do GitHub Actions (arquivos <code>.yml</code>),
+        estes arquivos contêm <strong>instruções em linguagem natural</strong> para o Copilot.
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>📁 Estrutura de um Arquivo de Workflow Agêntico</h2>
+      <p>Cada arquivo <code>.md</code> de workflow possui:</p>
+      <ul>
+        <li><strong>Frontmatter YAML</strong> — define o gatilho (<code>on:</code>), permissões e outputs seguros</li>
+        <li><strong>Corpo em Markdown</strong> — instrução em linguagem natural para o Copilot executar</li>
+      </ul>
+      <hr />
+      <p>Exemplo de frontmatter:</p>
+      <pre style="background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:16px;font-size:0.8rem;color:#e6edf3;overflow-x:auto;margin-top:12px;"><code>---
+on:
+  issues:
+    types: [opened]
+
+permissions: read-all
+
+safe-outputs:
+  add-comment:
+---</code></pre>
+    </div>
+
+    <div class="card">
+      <h2>🤖 Workflows deste Repositório</h2>
+      <ul>
+        <li>
+          <strong>issue-clarifier.md</strong>
+          <span class="badge badge-blue" style="margin-left: 8px;">issues: opened</span>
+          <p style="margin-top: 6px;">
+            Analisa novas issues e solicita mais detalhes quando a descrição está incompleta.
+          </p>
+        </li>
+        <hr />
+        <li>
+          <strong>pr-change-flowchart.md</strong>
+          <span class="badge badge-blue" style="margin-left: 8px;">pull_request: opened</span>
+          <p style="margin-top: 6px;">
+            Gera automaticamente um fluxograma de regras de negócio ao abrir um Pull Request,
+            destacando em vermelho o que foi removido e em verde o que foi adicionado.
+          </p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>🔐 Segurança e Permissões</h2>
+      <p>
+        Os workflows agênticos operam com o princípio de <strong>menor privilégio</strong>.
+        O campo <code>safe-outputs</code> limita as ações que o Copilot pode executar —
+        neste caso, apenas postar comentários (<code>add-comment</code>) — sem acesso
+        a escrita no código, configurações do repositório ou outros recursos sensíveis.
+      </p>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  GitHub Agentic Workflows · Powered by GitHub Copilot · Todos os workflows em Português
+</footer>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
